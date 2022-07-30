@@ -6,6 +6,7 @@ from turtle import position
 
 driversPositionInQualy = {}
 driversPositionInRace  = {}
+driversPositionInSprint = {}
 
 driversPoints = {}
 driversPointsPerMillion = {}
@@ -163,6 +164,14 @@ def calcPointsSprint():
     # Disqualification from sprint (-10pts)
     pass
 
+# Sprint Position Bonuses #
+def calcPointsSprintPositionBonuses():
+    global driversPositionInSprint
+    
+    for driver in driversNames:
+        position = driversPositionInSprint[driver]
+        driversPoints[driver] += getSprintScore(position)
+
 ######### Getter Functions #########
 
 def getRaceScore(position):
@@ -176,6 +185,25 @@ def getRaceScore(position):
         7: 6,
         8: 4,
         9: 2,
+        10: 1,
+    }
+    # get() method of dictionary data type returns
+    # value of passed argument if it is present
+    # in dictionary otherwise second argument will
+    # be assigned as default value of passed argument
+    return points.get(position, 0)
+
+def getSprintScore(position):
+    points = {
+        1: 10,
+        2:  9,
+        3:  8,
+        4:  7,
+        5:  6,
+        6:  5,
+        7:  4,
+        8:  3,
+        9:  2,
         10: 1,
     }
     # get() method of dictionary data type returns
@@ -267,7 +295,19 @@ def getResultsRace(race_file):
     calcPointsRace()
     calcPointsRacePositionBonuses()
     calcRaceStreaks()
-       
+
+def getResultsSprint(sprint_file):
+    f = open(sprint_file, 'r')
+    lines = f.readlines()
+    
+    # first, set all positions, to later calculate beatTeamMateInQualy()
+    for position, driver in enumerate(lines, start=1):
+        driver = driver.replace('\n','').replace(' ','')
+        driversPositionInSprint[driver] = position
+
+    calcPointsSprint()
+    calcPointsSprintPositionBonuses()
+
 def getConstructorPoints():
     d = driversPoints
     output = sorted( ((driver, points) for driver, points in d.items()), reverse=True, key=lambda item: item[1])
@@ -372,9 +412,13 @@ def sign(x):
 
 if __name__ == '__main__':
     
+    sprint = False
+
     initDriversPoints()
     getResultsQualy('qualy.txt')
     getResultsRace('race.txt')
+    if (sprint):
+        getResultsSprint('sprint.txt')
     
     # test example
     #beatTeamMateInQualy("Bottas")
