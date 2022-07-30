@@ -1,4 +1,7 @@
-# global vars
+######### global vars #########
+
+from this import d
+
 
 driversPositionInQualy = {}
 driversPositionInRace  = {}
@@ -8,6 +11,8 @@ driversPointsPerMillion = {}
 
 constructorsPoints = {}
 constructorsPointsPerMillion = {}
+
+######### drivers & constructors #########
 
 driversNames = [
 "Lecrerc",
@@ -57,7 +62,68 @@ constructorDrivers = {
     "Williams": ["Albon", "Latifi"],
     "Haas": ["Magnussen", "Mick"]
 }
+ 
+######### points scoring #########
 
+# Qualifying #
+def calcPointsQualifying(qualy_file):
+    global driversPositionInQualy
+
+
+    for driver in driversNames:
+        position = driversPositionInQualy[driver]
+        print(driver + " placed "+str(position)+" in qualy")
+        
+        # so far, assuming no DNF's
+        # Q3 Finish
+        if (position <= 10):
+            driversPoints[driver] += 3
+        # Q2 Finish
+        elif (position <= 15):
+            driversPoints[driver] += 2
+        # Q1 Finish
+        else:
+            driversPoints[driver] += 1
+        
+        # Beat team mate (driver only)
+        if (beatTeamMateInQualy(driver)):
+            driversPoints[driver] += 2    
+        # to be implemented:
+        # Not classified (-5pts)
+        # Disqualification from qualifying (-10pts)
+
+
+def beatTeamMateInQualy(driver):
+    constructor = getDriverConstructor(driver)
+    teamMates = constructorDrivers[constructor]
+    teamMatesAux = teamMates.copy()
+    teamMatesAux.remove(driver)
+    teamMate = teamMatesAux[0]
+    
+    driverPositionInQualy   = driversPositionInQualy[driver]
+    teamMatePositionInQualy = driversPositionInQualy[teamMate]
+
+    if (driverPositionInQualy < teamMatePositionInQualy):
+        return True
+    else:
+        return False
+
+def beatTeamMateInRace(driver):
+    constructor = getDriverConstructor(driver)
+    teamMates = constructorDrivers[constructor]
+    teamMatesAux = teamMates.copy()
+    teamMatesAux.remove(driver)
+    teamMate = teamMatesAux[0]
+    
+    driverPositionInRace    = driversPositionInRace[driver]
+    teamMatePositionInRace  = driversPositionInRace[teamMate]
+
+    if (driverPositionInRace < teamMatePositionInRace):
+        return True
+    else:
+        return False
+
+######### getter functions #########
 
 def getRaceScore(position):
     points = {
@@ -126,28 +192,6 @@ def getConstructorsValue(constructor):
     # be assigned as default value of passed argument
     return value.get(constructor, 0)
 
-def initDriversPoints():
-    global driversNames
-    for name in driversNames:
-        driversPoints[name] = 0
-
-def fillDriversPointsPerMillion():
-    for name in driversNames:
-        driversPointsPerMillion[name] = driversPoints[name]*1000/getDriversValue(name)  
-
-def fillConstructorPoints():
-    for constructor in constructorNames:
-        driver1     = constructorDrivers[constructor][0]
-        driver2     = constructorDrivers[constructor][1]
-        driver1Points = driversPoints[driver1]
-        driver2Points = driversPoints[driver2]
-
-        constructorsPoints[constructor] = driver1Points + driver2Points
-
-def fillConstructorPointsPerMillion():
-    for constructor in constructorNames:
-        constructorsPointsPerMillion[constructor] = constructorsPoints[constructor]*1000/getConstructorsValue(constructor)  
-
 def getDriverConstructor(name):
     for constructor in constructorNames:
         if (name in constructorDrivers[constructor]):
@@ -156,42 +200,12 @@ def getDriverConstructor(name):
     print("constructor not found !")
     return ""
 
-def beatTeamMateInQualy(driver):
-    constructor = getDriverConstructor(driver)
-    teamMates = constructorDrivers[constructor]
-    teamMatesAux = teamMates.copy()
-    teamMatesAux.remove(driver)
-    teamMate = teamMatesAux[0]
-    
-    driverPositionInQualy   = driversPositionInQualy[driver]
-    teamMatePositionInQualy = driversPositionInQualy[teamMate]
-
-    if (driverPositionInQualy < teamMatePositionInQualy):
-        return True
-    else:
-        return False
-
-def beatTeamMateInRace(driver):
-    constructor = getDriverConstructor(driver)
-    teamMates = constructorDrivers[constructor]
-    teamMatesAux = teamMates.copy()
-    teamMatesAux.remove(driver)
-    teamMate = teamMatesAux[0]
-    
-    driverPositionInRace    = driversPositionInRace[driver]
-    teamMatePositionInRace  = driversPositionInRace[teamMate]
-
-    if (driverPositionInRace < teamMatePositionInRace):
-        return True
-    else:
-        return False
-
-def getResultsQualy(path):
+def getResultsQualy(qualy_file):
     global driversPositionInQualy
 
-    f = open(path, 'r')
+    f = open(qualy_file, 'r')
     lines = f.readlines()
-    # first, fill all positions, to later calculate beatTeamMateInQualy()
+    # first, set all positions, to later calculate beatTeamMateInQualy()
     for position, driver in enumerate(lines, start=1):
         driver = driver.replace('\n','').replace(' ','')
         driversPositionInQualy[driver] = position
@@ -208,11 +222,11 @@ def getResultsQualy(path):
         if (beatTeamMateInQualy(driver)):
             driversPoints[driver] += 2    
 
-def getResultsRace(path):
-    f = open(path, 'r')
+def getResultsRace(race_file):
+    f = open(race_file, 'r')
     lines = f.readlines()
     
-    # first, fill all positions, to later calculate beatTeamMateInQualy()
+    # first, set all positions, to later calculate beatTeamMateInQualy()
     for position, driver in enumerate(lines, start=1):
         driver = driver.replace('\n','').replace(' ','')
         driversPositionInRace[driver] = position
@@ -233,6 +247,40 @@ def getResultsRace(path):
         else: ## same position in qualy and race
             pass
 
+def getConstructorPoints():
+    d = driversPoints
+    output = sorted( ((driver, points) for driver, points in d.items()), reverse=True, key=lambda item: item[1])
+    print("\nPosition - Driver \tPoints")
+    print("--------------------------------")
+    for position, (driver, points) in enumerate(output, start=1):
+        print("{0: ^8} - {1} \t {2}".format(position,driver, points))
+
+######### setter functions #########
+
+def initDriversPoints():
+    global driversNames
+    for driver in driversNames:
+        driversPoints[driver] = 0
+
+def setDriversPointsPerMillion():
+    for name in driversNames:
+        driversPointsPerMillion[name] = driversPoints[name]*1000/getDriversValue(name)  
+
+def setConstructorPoints():
+    for constructor in constructorNames:
+        driver1     = constructorDrivers[constructor][0]
+        driver2     = constructorDrivers[constructor][1]
+        driver1Points = driversPoints[driver1]
+        driver2Points = driversPoints[driver2]
+
+        constructorsPoints[constructor] = driver1Points + driver2Points
+
+def setConstructorPointsPerMillion():
+    for constructor in constructorNames:
+        constructorsPointsPerMillion[constructor] = constructorsPoints[constructor]*1000/getConstructorsValue(constructor)  
+
+######### print functions #########
+
 def printDriversPoints():
     d = driversPoints
     output = sorted( ((driver, points) for driver, points in d.items()), reverse=True, key=lambda item: item[1])
@@ -247,14 +295,6 @@ def printDriversPointsPerMillion():
     print("\nPosition - Driver \tPointsPerMillion")
     for position, (driver, pointsPerMillion) in enumerate(output, start=1):
         print("{0: ^8} - {1} \t {2}".format(position,driver, pointsPerMillion))
-
-def getConstructorPoints():
-    d = driversPoints
-    output = sorted( ((driver, points) for driver, points in d.items()), reverse=True, key=lambda item: item[1])
-    print("\nPosition - Driver \tPoints")
-    print("--------------------------------")
-    for position, (driver, points) in enumerate(output, start=1):
-        print("{0: ^8} - {1} \t {2}".format(position,driver, points))
 
 def printConstructorPoints():    
     d = constructorsPoints
@@ -272,6 +312,8 @@ def printConstructorPointsPerMillion():
     for position, (constructor, points) in enumerate(output, start=1):
         print("{0: ^8} - {1} \t {2}".format(position,constructor, points))
 
+######### main #########
+
 if __name__ == '__main__':
     
     initDriversPoints()
@@ -281,10 +323,10 @@ if __name__ == '__main__':
     # test example
     #beatTeamMateInQualy("Bottas")
 
-    fillDriversPointsPerMillion()
+    setDriversPointsPerMillion()
 
-    fillConstructorPoints()
-    fillConstructorPointsPerMillion()
+    setConstructorPoints()
+    setConstructorPointsPerMillion()
 
     printDriversPoints()
     printDriversPointsPerMillion()
