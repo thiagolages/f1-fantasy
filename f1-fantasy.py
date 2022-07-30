@@ -134,6 +134,15 @@ def calcPointsRacePositionBonuses():
         position = driversPositionInRace[driver]
         driversPoints[driver] += getRaceScore(position)
 
+# Race Streaks
+def calcRaceStreaks():
+    #to be implemented
+    # Driver Qualifying - driver qualifies in the Top 10 for 5 qualifying sessions in a row (+5 pts)
+    # Driver Race - driver finishes in the Top 10 for 5 races in a row (+10 pts)
+    # Constructor Qualifying - both drivers qualify in the Top 10 for 3 qualifying sessions in a row (+5 pts)
+    # Constructor Race - both drivers finish in the Top 10 for 3 races in a row (+10 pts)
+    pass
+
 ######### Getter Functions #########
 
 def getRaceScore(position):
