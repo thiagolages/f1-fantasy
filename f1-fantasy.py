@@ -134,13 +134,33 @@ def calcPointsRacePositionBonuses():
         position = driversPositionInRace[driver]
         driversPoints[driver] += getRaceScore(position)
 
-# Race Streaks
-def calcRaceStreaks():
+# Race Streaks #
+def calcPointsRaceStreaks():
     #to be implemented
     # Driver Qualifying - driver qualifies in the Top 10 for 5 qualifying sessions in a row (+5 pts)
     # Driver Race - driver finishes in the Top 10 for 5 races in a row (+10 pts)
     # Constructor Qualifying - both drivers qualify in the Top 10 for 3 qualifying sessions in a row (+5 pts)
     # Constructor Race - both drivers finish in the Top 10 for 3 races in a row (+10 pts)
+    # NOTES:
+    # * When a driver or constructor achieves a streak, that streak will reset and must be built up again. For example: A driver achieves five top tens in a row and will be awarded a streak, but must achieve another five top tens in a row to get streak points for a second time.
+    # ** Sprint is excluded from Streaks calculations.
+    pass
+
+# Sprint #
+def calcPointsSprint():
+    # NOTES:
+    # * Sprint Positions Gained: Sprint positions gained are relative to Qualifying finishing position.
+    # ** Classification: Cars that have covered 90% of the number of laps covered by the winner (rounded down to the nears whole number of laps) will be deemed to be Classified. Cars that have covered less than 90% of the number of laps covered by the winner (rounded down to the nearest whole number of laps) will be deemed to be Not Classified. Cars that are not listed on the Sprint Starting Grid will be neither Classified nor Not Classified, and will not receive points for either event type. Classifications are based on FIA decisions.
+    # *** Sprint is excluded from Streaks calculations.
+
+    # to be implemented
+    # Classified (+1pt)
+    # Per position gained (max. +5 pts) (+1pt)
+    # Beat team mate (driver only) (+2 pts)
+    # Fastest lap (+3pts)
+    # Per position lost (max. -5 pts) (-1pt)
+    # Not classified (-5pts)
+    # Disqualification from sprint (-10pts)
     pass
 
 ######### Getter Functions #########
