@@ -1,8 +1,10 @@
+from prettytable import PrettyTable
+
 ######### Global Variables #########
-
-from this import d
-from turtle import position
-
+table_driversPoints = PrettyTable()
+table_driversPointsPerMillion = PrettyTable()    
+table_constructorsPoints = PrettyTable()
+table_constructorsPointsPerMillion = PrettyTable()
 
 driversPositionInQualy = {}
 driversPositionInRace  = {}
@@ -73,7 +75,6 @@ def calcPointsQualifying():
 
     for driver in driversNames:
         position = driversPositionInQualy[driver]
-        print(driver + " placed "+str(position)+" in qualy")
         
         # so far, assuming no DNF's
         # Q3 Finish
@@ -136,7 +137,7 @@ def calcPointsRacePositionBonuses():
         driversPoints[driver] += getRaceScore(position)
 
 # Race Streaks #
-def calcPointsRaceStreaks():
+def calcPointsRaceStreak():
     #to be implemented
     # Driver Qualifying - driver qualifies in the Top 10 for 5 qualifying sessions in a row (+5 pts)
     # Driver Race - driver finishes in the Top 10 for 5 races in a row (+10 pts)
@@ -294,7 +295,7 @@ def getResultsRace(race_file):
 
     calcPointsRace()
     calcPointsRacePositionBonuses()
-    calcRaceStreaks()
+    calcPointsRaceStreak()
 
 def getResultsSprint(sprint_file):
     f = open(sprint_file, 'r')
@@ -343,35 +344,80 @@ def setConstructorPointsPerMillion():
 ######### Print Functions #########
 
 def printDriversPoints():
+    table_driversPoints.field_names = ["Position", "Driver", "Points"]
+    table_driversPoints.align["Driver"] = "l" # align to the left
+    
     d = driversPoints
     output = sorted( ((driver, points) for driver, points in d.items()), reverse=True, key=lambda item: item[1])
-    print("\nPosition - Driver \tPoints")
-    print("--------------------------------")
     for position, (driver, points) in enumerate(output, start=1):
-        print("{0: ^8} - {1} \t {2}".format(position,driver, points))
+        table_driversPoints.add_row([position,driver, points])
+
+    #print(table_driversPoints)
 
 def printDriversPointsPerMillion():
+    table_driversPointsPerMillion.field_names = ["Position", "Driver", "PointsPerMillion"]
+    table_driversPointsPerMillion.align["Driver"] = "l" # align to the left
+
     d = driversPointsPerMillion
     output = sorted( ((driver, points) for driver, points in d.items()), reverse=True, key=lambda item: item[1])
-    print("\nPosition - Driver \tPointsPerMillion")
     for position, (driver, pointsPerMillion) in enumerate(output, start=1):
-        print("{0: ^8} - {1} \t {2}".format(position,driver, pointsPerMillion))
+        table_driversPointsPerMillion.add_row([position,driver, round(pointsPerMillion,2)])
 
-def printConstructorPoints():    
+    #print(table_driversPointsPerMillion)
+
+def printConstructorPoints():
+    table_constructorsPoints.field_names = ["Position", "Constructor", "Points"]
+    table_constructorsPoints.align["Constructor"] = "l" # align to the left
+
     d = constructorsPoints
     output = sorted( ((driver, points) for driver, points in d.items()), reverse=True, key=lambda item: item[1])
-    print("\nPosition - Constructor \tPoints")
-    print("--------------------------------")
     for position, (constructor, points) in enumerate(output, start=1):
-        print("{0: ^8} - {1} \t {2}".format(position,constructor, points))
+        table_constructorsPoints.add_row([position,constructor, points])
 
-def printConstructorPointsPerMillion():   
+    #print(table_constructorsPoints)
+
+def printConstructorPointsPerMillion():
+    table_constructorsPointsPerMillion.field_names = ["Position", "Constructor", "PointsPerMillion"]
+    table_constructorsPointsPerMillion.align["Constructor"] = "l" # align to the left
+
     d = constructorsPointsPerMillion
-    output = sorted( ((driver, points) for driver, points in d.items()), reverse=True, key=lambda item: item[1])
-    print("\nPosition - Constructor \tPoints")
-    print("--------------------------------")
-    for position, (constructor, points) in enumerate(output, start=1):
-        print("{0: ^8} - {1} \t {2}".format(position,constructor, points))
+    output = sorted( ((driver, pointsPerMillion) for driver, pointsPerMillion in d.items()), reverse=True, key=lambda item: item[1])
+    for position, (constructor, pointsPerMillion) in enumerate(output, start=1):
+        table_constructorsPointsPerMillion.add_row([position,constructor, round(pointsPerMillion,2)])
+    
+    #print(table_constructorsPointsPerMillion)
+
+def pad_lines_vertically(lines, size):
+    ''' List of lines of exactly `size` length.
+    Extended with empty lines if needed.
+    '''
+    orig_lines = list(lines)
+    assert size >= len(orig_lines)
+    return orig_lines + [''] * (size - len(orig_lines))
+
+def pad_lines_horizontally(lines):
+    ''' Pad lines to the lenght of the longest line.
+    '''
+    line_length = max(len(line) for line in lines)
+    return [
+        line.ljust(line_length)
+        for line in lines
+    ]
+
+def text_add(text1, text2, padding=' '):
+    lines1 = text1.splitlines()
+    lines2 = text2.splitlines()
+    line_count = max(len(lines1), len(lines2))
+
+    def pad_lines(lines):
+        return pad_lines_horizontally(
+            pad_lines_vertically(lines, line_count)
+        )
+
+    return '\n'.join(
+        ''.join(line1 + padding + line2)
+        for line1, line2 in zip(pad_lines(lines1), pad_lines(lines2))
+    )
 
 ######### Aux Functions #########
 
@@ -434,6 +480,7 @@ if __name__ == '__main__':
     printConstructorPoints()
     printConstructorPointsPerMillion()
 
-
+    print(text_add(table_driversPoints.get_string(), table_driversPointsPerMillion.get_string(), padding='\t'))
+    print(text_add(table_constructorsPoints.get_string(), table_constructorsPointsPerMillion.get_string(), padding='\t'))
 
    
