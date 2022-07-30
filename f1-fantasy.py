@@ -1,6 +1,7 @@
-######### global vars #########
+######### Global Variables #########
 
 from this import d
+from turtle import position
 
 
 driversPositionInQualy = {}
@@ -12,7 +13,7 @@ driversPointsPerMillion = {}
 constructorsPoints = {}
 constructorsPointsPerMillion = {}
 
-######### drivers & constructors #########
+######### Drivers & Constructors #########
 
 driversNames = [
 "Lecrerc",
@@ -63,12 +64,11 @@ constructorDrivers = {
     "Haas": ["Magnussen", "Mick"]
 }
  
-######### points scoring #########
+######### Points Scoring #########
 
 # Qualifying #
-def calcPointsQualifying(qualy_file):
+def calcPointsQualifying():
     global driversPositionInQualy
-
 
     for driver in driversNames:
         position = driversPositionInQualy[driver]
@@ -92,38 +92,15 @@ def calcPointsQualifying(qualy_file):
         # Not classified (-5pts)
         # Disqualification from qualifying (-10pts)
 
+# Qualifying Position Bonuses #
+def calcPointsQualifyingPositionBonuses():
+    global driversPositionInQualy
 
-def beatTeamMateInQualy(driver):
-    constructor = getDriverConstructor(driver)
-    teamMates = constructorDrivers[constructor]
-    teamMatesAux = teamMates.copy()
-    teamMatesAux.remove(driver)
-    teamMate = teamMatesAux[0]
-    
-    driverPositionInQualy   = driversPositionInQualy[driver]
-    teamMatePositionInQualy = driversPositionInQualy[teamMate]
+    for driver in driversNames:
+        position = driversPositionInQualy[driver]
+        driversPoints[driver] += (10-position + 1) if position<=10 else 0
 
-    if (driverPositionInQualy < teamMatePositionInQualy):
-        return True
-    else:
-        return False
-
-def beatTeamMateInRace(driver):
-    constructor = getDriverConstructor(driver)
-    teamMates = constructorDrivers[constructor]
-    teamMatesAux = teamMates.copy()
-    teamMatesAux.remove(driver)
-    teamMate = teamMatesAux[0]
-    
-    driverPositionInRace    = driversPositionInRace[driver]
-    teamMatePositionInRace  = driversPositionInRace[teamMate]
-
-    if (driverPositionInRace < teamMatePositionInRace):
-        return True
-    else:
-        return False
-
-######### getter functions #########
+######### Getter Functions #########
 
 def getRaceScore(position):
     points = {
@@ -212,15 +189,8 @@ def getResultsQualy(qualy_file):
 
     #print(driversPositionInQualy)
 
-    for position, driver in enumerate(lines):
-        driver = driver.replace('\n', '').replace(' ', '')
-        driversPoints[driver] += (10-position) if position<10 else 0
-        if (position <= 15):
-            driversPoints[driver] += 1
-        if (position <= 10):
-            driversPoints[driver] += 2 + 3
-        if (beatTeamMateInQualy(driver)):
-            driversPoints[driver] += 2    
+    calcPointsQualifying()
+    calcPointsQualifyingPositionBonuses()
 
 def getResultsRace(race_file):
     f = open(race_file, 'r')
@@ -231,22 +201,10 @@ def getResultsRace(race_file):
         driver = driver.replace('\n','').replace(' ','')
         driversPositionInRace[driver] = position
 
-    for position, driver in enumerate(lines, start=1):
-        driver = driver.replace('\n', '').replace(' ', '')
-        driversPoints[driver] += 1 # 1 point for finishing the race
-        driversPoints[driver] += getRaceScore(position) # race score
-        if (beatTeamMateInRace(driver)):
-            driversPoints[driver] += 3
-        
-        # positive result means gained positions
-        diffPositions = driversPositionInQualy[driver] - driversPositionInRace[driver]
-        if (diffPositions > 0): # if gained positions
-            driversPoints[driver] += 2*diffPositions if abs(2*diffPositions)<=10 else 10
-        elif (diffPositions < 0): # if lost positions
-            driversPoints[driver] -= 2*diffPositions if abs(2*diffPositions)<=10 else 10
-        else: ## same position in qualy and race
-            pass
-
+    calcPointsRace()
+    calcPointsRacePositionBonuses()
+    calcRaceStreaks()
+       
 def getConstructorPoints():
     d = driversPoints
     output = sorted( ((driver, points) for driver, points in d.items()), reverse=True, key=lambda item: item[1])
@@ -255,7 +213,7 @@ def getConstructorPoints():
     for position, (driver, points) in enumerate(output, start=1):
         print("{0: ^8} - {1} \t {2}".format(position,driver, points))
 
-######### setter functions #########
+######### Setter Functions #########
 
 def initDriversPoints():
     global driversNames
@@ -279,7 +237,7 @@ def setConstructorPointsPerMillion():
     for constructor in constructorNames:
         constructorsPointsPerMillion[constructor] = constructorsPoints[constructor]*1000/getConstructorsValue(constructor)  
 
-######### print functions #########
+######### Print Functions #########
 
 def printDriversPoints():
     d = driversPoints
@@ -312,7 +270,42 @@ def printConstructorPointsPerMillion():
     for position, (constructor, points) in enumerate(output, start=1):
         print("{0: ^8} - {1} \t {2}".format(position,constructor, points))
 
-######### main #########
+######### Aux Functions #########
+
+def beatTeamMateInQualy(driver):
+    constructor = getDriverConstructor(driver)
+    teamMates = constructorDrivers[constructor]
+    teamMatesAux = teamMates.copy()
+    teamMatesAux.remove(driver)
+    teamMate = teamMatesAux[0]
+    
+    driverPositionInQualy   = driversPositionInQualy[driver]
+    teamMatePositionInQualy = driversPositionInQualy[teamMate]
+
+    if (driverPositionInQualy < teamMatePositionInQualy):
+        return True
+    else:
+        return False
+
+def beatTeamMateInRace(driver):
+    constructor = getDriverConstructor(driver)
+    teamMates = constructorDrivers[constructor]
+    teamMatesAux = teamMates.copy()
+    teamMatesAux.remove(driver)
+    teamMate = teamMatesAux[0]
+    
+    driverPositionInRace    = driversPositionInRace[driver]
+    teamMatePositionInRace  = driversPositionInRace[teamMate]
+
+    if (driverPositionInRace < teamMatePositionInRace):
+        return True
+    else:
+        return False
+
+def sign(x):
+    return -1 if (x<0) else +1
+
+######### Main #########
 
 if __name__ == '__main__':
     
