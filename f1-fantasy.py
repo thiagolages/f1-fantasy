@@ -100,6 +100,32 @@ def calcPointsQualifyingPositionBonuses():
         position = driversPositionInQualy[driver]
         driversPoints[driver] += (10-position + 1) if position<=10 else 0
 
+# Race #
+def calcPointsRace():
+    global driversPositionInRace, driversPositionInQualy
+
+    for driver in driversNames:
+        positionInRace = driversPositionInRace[driver]
+        positionInQualy = driversPositionInQualy[driver]
+
+        # Classified (+1pt)    
+        driversPoints[driver] += 1 # assuming no DNF's
+
+        # Per position gained (+2pts, max. +10pts)
+        # Per position lost (-2pts, max. -10pts)
+        diffPositions               = positionInQualy - positionInRace # positive means gained positions
+        pointsGainedByOvertaking    = diffPositions*2 if abs((diffPositions)*2) <= 10 else 10*sign(diffPositions)
+        driversPoints[driver]       += pointsGainedByOvertaking
+
+        # Beat team mate (driver only) (+3pts)
+        if (beatTeamMateInRace(driver)):
+            driversPoints[driver] += 3
+
+        # to be implemented:
+        # Fastest lap (+5pt)
+        # Not classified (-10pts)
+        # Disqualification from race (-20pts)
+
 ######### Getter Functions #########
 
 def getRaceScore(position):
