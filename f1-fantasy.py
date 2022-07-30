@@ -126,6 +126,14 @@ def calcPointsRace():
         # Not classified (-10pts)
         # Disqualification from race (-20pts)
 
+# Race Position Bonuses #
+def calcPointsRacePositionBonuses():
+    global driversPositionInRace
+    
+    for driver in driversNames:
+        position = driversPositionInRace[driver]
+        driversPoints[driver] += getRaceScore(position)
+
 ######### Getter Functions #########
 
 def getRaceScore(position):
