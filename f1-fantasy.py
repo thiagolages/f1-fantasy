@@ -24,7 +24,7 @@ driversNames = [
 "Verstappen",
 "Perez",
 "Norris", 
-"Ricciardo",
+"Hulkenberg",
 "Hamilton", 
 "Russel",
 "Alonso",
@@ -33,12 +33,12 @@ driversNames = [
 "Zhou",
 "Gasly",
 "Tsunoda",
-"Vettel",
+"DeVries",
 "Stroll",
 "Albon",
-"Latifi",
+"Sargeant",
 "Magnussen",
-"Mick"
+"Piastri"
 ]
 
 constructorNames = [
@@ -58,13 +58,13 @@ constructorDrivers = {
     "Mercedes": ["Hamilton", "Russel"],
     "RedBull": ["Verstappen", "Perez"],
     "Ferrari": ["Lecrerc", "Sainz"],
-    "McLaren": ["Norris", "Ricciardo"],
-    "Alpine": ["Alonso", "Ocon"],
-    "AstonMartin": ["Vettel", "Stroll"],
-    "AlphaTauri": ["Gasly", "Tsunoda"],
+    "McLaren": ["Norris", "Piastri"],
+    "Alpine": ["Gasly", "Ocon"],
+    "AstonMartin": ["Alonso", "Stroll"],
+    "AlphaTauri": ["DeVries", "Tsunoda"],
     "AlfaRomeo": ["Bottas", "Zhou"],
-    "Williams": ["Albon", "Latifi"],
-    "Haas": ["Magnussen", "Mick"]
+    "Williams": ["Albon", "Sargeant"],
+    "Haas": ["Magnussen", "Hulkenberg"]
 }
  
 ######### Points Scoring #########
@@ -122,7 +122,6 @@ def calcPointsRace():
         # Beat team mate (driver only) (+3pts)
         if (beatTeamMateInRace(driver)):
             driversPoints[driver] += 3
-
         # to be implemented:
         # Fastest lap (+5pt)
         # Not classified (-10pts)
@@ -220,7 +219,7 @@ def getDriversValue(name):
         "Verstappen":   30.4,
         "Perez"     :   18.3,
         "Norris"    :   15.7,
-        "Ricciardo" :   13.5,
+        "Piastri" :   13.5,
         "Hamilton"  :   30.1,
         "Russel"    :   24.1,
         "Alonso"    :   12.5,
@@ -229,12 +228,12 @@ def getDriversValue(name):
         "Zhou"      :   8.4,
         "Gasly"     :   12.9,
         "Tsunoda"   :   8.3,
-        "Vettel"    :   11.5,
+        "DeVries"    :   11.5,
         "Stroll"    :   9.1,
         "Albon"     :   7.6,
-        "Latifi"    :   6.7,
+        "Hulkenberg"    :   6.7,
         "Magnussen" :   6.1,
-        "Mick"      :   6.2
+        "Sargeant"      :   6.2
     }
     # get() method of dictionary data type returns
     # value of passed argument if it is present
@@ -352,8 +351,6 @@ def printDriversPoints():
     for position, (driver, points) in enumerate(output, start=1):
         table_driversPoints.add_row([position,driver, points])
 
-    #print(table_driversPoints)
-
 def printDriversPointsPerMillion():
     table_driversPointsPerMillion.field_names = ["Position", "Driver", "PointsPerMillion"]
     table_driversPointsPerMillion.align["Driver"] = "l" # align to the left
@@ -362,8 +359,6 @@ def printDriversPointsPerMillion():
     output = sorted( ((driver, points) for driver, points in d.items()), reverse=True, key=lambda item: item[1])
     for position, (driver, pointsPerMillion) in enumerate(output, start=1):
         table_driversPointsPerMillion.add_row([position,driver, round(pointsPerMillion,2)])
-
-    #print(table_driversPointsPerMillion)
 
 def printConstructorPoints():
     table_constructorsPoints.field_names = ["Position", "Constructor", "Points"]
@@ -374,8 +369,6 @@ def printConstructorPoints():
     for position, (constructor, points) in enumerate(output, start=1):
         table_constructorsPoints.add_row([position,constructor, points])
 
-    #print(table_constructorsPoints)
-
 def printConstructorPointsPerMillion():
     table_constructorsPointsPerMillion.field_names = ["Position", "Constructor", "PointsPerMillion"]
     table_constructorsPointsPerMillion.align["Constructor"] = "l" # align to the left
@@ -384,40 +377,17 @@ def printConstructorPointsPerMillion():
     output = sorted( ((driver, pointsPerMillion) for driver, pointsPerMillion in d.items()), reverse=True, key=lambda item: item[1])
     for position, (constructor, pointsPerMillion) in enumerate(output, start=1):
         table_constructorsPointsPerMillion.add_row([position,constructor, round(pointsPerMillion,2)])
+
+def printAll():
     
-    #print(table_constructorsPointsPerMillion)
+    printDriversPoints()
+    printDriversPointsPerMillion()
 
-def pad_lines_vertically(lines, size):
-    ''' List of lines of exactly `size` length.
-    Extended with empty lines if needed.
-    '''
-    orig_lines = list(lines)
-    assert size >= len(orig_lines)
-    return orig_lines + [''] * (size - len(orig_lines))
-
-def pad_lines_horizontally(lines):
-    ''' Pad lines to the lenght of the longest line.
-    '''
-    line_length = max(len(line) for line in lines)
-    return [
-        line.ljust(line_length)
-        for line in lines
-    ]
-
-def text_add(text1, text2, padding=' '):
-    lines1 = text1.splitlines()
-    lines2 = text2.splitlines()
-    line_count = max(len(lines1), len(lines2))
-
-    def pad_lines(lines):
-        return pad_lines_horizontally(
-            pad_lines_vertically(lines, line_count)
-        )
-
-    return '\n'.join(
-        ''.join(line1 + padding + line2)
-        for line1, line2 in zip(pad_lines(lines1), pad_lines(lines2))
-    )
+    printConstructorPoints()
+    printConstructorPointsPerMillion()
+    
+    print(text_add(table_driversPoints.get_string(), table_driversPointsPerMillion.get_string(), padding='\t'))
+    print(text_add(table_constructorsPoints.get_string(), table_constructorsPointsPerMillion.get_string(), padding='\t'))
 
 ######### Aux Functions #########
 
@@ -451,6 +421,39 @@ def beatTeamMateInRace(driver):
     else:
         return False
 
+# from https://stackoverflow.com/questions/25721965/python-prettytable-printing-table-on-same-line
+def pad_lines_vertically(lines, size):
+    ''' List of lines of exactly `size` length.
+    Extended with empty lines if needed.
+    '''
+    orig_lines = list(lines)
+    assert size >= len(orig_lines)
+    return orig_lines + [''] * (size - len(orig_lines))
+
+def pad_lines_horizontally(lines):
+    ''' Pad lines to the lenght of the longest line.
+    '''
+    line_length = max(len(line) for line in lines)
+    return [
+        line.ljust(line_length)
+        for line in lines
+    ]
+
+def text_add(text1, text2, padding=' '):
+    lines1 = text1.splitlines()
+    lines2 = text2.splitlines()
+    line_count = max(len(lines1), len(lines2))
+
+    def pad_lines(lines):
+        return pad_lines_horizontally(
+            pad_lines_vertically(lines, line_count)
+        )
+
+    return '\n'.join(
+        ''.join(line1 + padding + line2)
+        for line1, line2 in zip(pad_lines(lines1), pad_lines(lines2))
+    )
+
 def sign(x):
     return -1 if (x<0) else +1
 
@@ -466,21 +469,8 @@ if __name__ == '__main__':
     if (sprint):
         getResultsSprint('sprint.txt')
     
-    # test example
-    #beatTeamMateInQualy("Bottas")
-
     setDriversPointsPerMillion()
-
     setConstructorPoints()
     setConstructorPointsPerMillion()
 
-    printDriversPoints()
-    printDriversPointsPerMillion()
-
-    printConstructorPoints()
-    printConstructorPointsPerMillion()
-
-    print(text_add(table_driversPoints.get_string(), table_driversPointsPerMillion.get_string(), padding='\t'))
-    print(text_add(table_constructorsPoints.get_string(), table_constructorsPointsPerMillion.get_string(), padding='\t'))
-
-   
+    printAll()
